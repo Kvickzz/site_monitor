@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Site Monitor{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1d1d22;
+            --surface: #29292e;
+            --surface-alt: #232327;
+            --border: #3a3a40;
+            --accent: #912828;
+            --accent-hover: #af2828;
+            --text: #ffffff;
+            --text-muted: #9a9aa0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        a { 
+            color: var(--accent-hover); 
+            text-decoration: none;
+        }
+        a:hover { color: #d43a3a; }
+
+        /* Navbar */
+        .navbar {
+            background-color: var(--surface) !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,.3);
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.25);
+            color: var(--text);
+        }
+        .card-header {
+            background-color: var(--surface-alt);
+            border-bottom: 1px solid var(--border);
+        }
+        .card-footer {
+            background-color: transparent;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Text helpers stay readable on dark bg */
+        .text-muted { color: var(--text-muted) !important; }
+
+        /* Tables */
+        .table {
+            color: var(--text);
+            border-color: var(--border);
+        }
+        .table > :not(caption) > * > * {
+            background-color: transparent;
+            color: var(--text);
+            border-bottom-color: var(--border);
+        }
+        .table-hover > tbody > tr:hover > * {
+            background-color: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+        }
+
+        /* Forms */
+        .form-control, .form-select {
+            background-color: rgb(65, 76, 112);
+            border: 1px solid rgb(94, 94, 95);
+            color: white;
+            border-radius: 4px;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: rgb(65, 76, 112);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 0.2rem rgba(145, 40, 40, 0.25);
+            outline: none;
+        }
+        .form-control::placeholder { color: #d5d8e5; }
+        .form-check-input {
+            background-color: var(--surface-alt);
+            border: 1px solid var(--border);
+        }
+        .form-check-input:checked {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+        .form-text { color: var(--text-muted); }
+        .invalid-feedback { color: #ff8080; }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+        .btn-secondary {
+            background-color: #46464d;
+            border-color: #46464d;
+        }
+        .btn-secondary:hover {
+            background-color: #57575f;
+            border-color: #57575f;
+        }
+        .btn-outline-primary {
+            color: var(--accent-hover);
+            border-color: var(--accent);
+        }
+        .btn-outline-primary:hover {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        .btn-danger {
+            background-color: #b02a37;
+            border-color: #b02a37;
+        }
+        .btn-danger:hover {
+            background-color: #c93a48;
+            border-color: #c93a48;
+        }
+
+        /* Badges: Website status */
+        .badge-up { background-color: #28a745; }
+        .badge-down { background-color: #dc3545; }
+        .badge-slow { background-color: #ffc107; color: #1d1d22; }
+        .badge-unknown { background-color: #6c757d; }
+
+        /* Badges: HealthCheck status (fixes missing classes) */
+        .badge-success { background-color: #28a745; }
+        .badge-timeout { background-color: #ffc107; color: #1d1d22; }
+        .badge-error { background-color: #dc3545; }
+        .badge-ssl_error { background-color: #dc3545; }
+        .badge-connection_error { background-color: #dc3545; }
+
+        /* Alerts: general bootstrap tags */
+        .alert { border: 1px solid transparent; }
+        .alert-success { background-color: rgba(40,167,69,.15); color: #6ee7b7; border-color: rgba(40,167,69,.35); }
+        .alert-danger  { background-color: rgba(220,53,69,.15); color: #fca5a5; border-color: rgba(220,53,69,.35); }
+        .alert-warning { background-color: rgba(255,193,7,.15); color: #ffe08a; border-color: rgba(255,193,7,.35); }
+        .alert-info    { background-color: rgba(13,202,240,.15); color: #7fdcf4; border-color: rgba(13,202,240,.35); }
+
+        /* Alerts: Alert.alert_type (fixes missing classes) */
+        .alert-up   { background-color: rgba(40,167,69,.15); color: #6ee7b7; border-color: rgba(40,167,69,.35); }
+        .alert-down { background-color: rgba(220,53,69,.15); color: #fca5a5; border-color: rgba(220,53,69,.35); }
+        .alert-slow { background-color: rgba(255,193,7,.15); color: #ffe08a; border-color: rgba(255,193,7,.35); }
+        .alert-ssl_error { background-color: rgba(220,53,69,.15); color: #fca5a5; border-color: rgba(220,53,69,.35); }
+
+        .status-indicator { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+        /* Progress bars */
+        .progress {
+            background-color: var(--surface-alt);
+        }
+
+        /* Dropdown */
+        .dropdown-menu {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+        }
+        .dropdown-item {
+            color: var(--text);
+        }
+        .dropdown-item:hover, .dropdown-item:focus {
+            background-color: var(--surface-alt);
+            color: var(--text);
+        }
+        .dropdown-divider { border-color: var(--border); }
+
+        .container.mt-4 {
+            flex: 1 0 auto;
+        }
+        footer {
+            flex-shrink: 0;
+            background-color: var(--surface) !important;
+            border-top: 1px solid var(--border) !important;
+            color: var(--text-muted);
+        }
+        footer a {
+        color: #9a9aa0;
+        transition: color 0.3s ease;
+        }   
+        footer a:hover {
+            color: #ffffff;
+        }
+
+        hr { border-color: var(--border); opacity: 1; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% include 'includes/navbar.html' %}
+
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="mt-5 py-4 border-top text-center">
+        <div class="container">
+            <p class="mb-0">
+                <a href="https://github.com/Kvickzz" target="_blank" rel="noopener">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="currentcolor" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_236_3359)"><path d="M12 0.296875C5.37 0.296875 0 5.66988 0 12.2969C0 17.5999 3.438 22.0969 8.205 23.6819C8.805 23.7949 9.025 23.4239 9.025 23.1049C9.025 22.8199 9.015 22.0649 9.01 21.0649C5.672 21.7889 4.968 19.4549 4.968 19.4549C4.422 18.0699 3.633 17.6999 3.633 17.6999C2.546 16.9559 3.717 16.9709 3.717 16.9709C4.922 17.0549 5.555 18.2069 5.555 18.2069C6.625 20.0419 8.364 19.5119 9.05 19.2049C9.158 18.4289 9.467 17.8999 9.81 17.5999C7.145 17.2999 4.344 16.2679 4.344 11.6699C4.344 10.3599 4.809 9.28988 5.579 8.44988C5.444 8.14688 5.039 6.92688 5.684 5.27388C5.684 5.27388 6.689 4.95188 8.984 6.50388C9.944 6.23688 10.964 6.10488 11.984 6.09888C13.004 6.10488 14.024 6.23688 14.984 6.50388C17.264 4.95188 18.269 5.27388 18.269 5.27388C18.914 6.92688 18.509 8.14688 18.389 8.44988C19.154 9.28988 19.619 10.3599 19.619 11.6699C19.619 16.2799 16.814 17.2949 14.144 17.5899C14.564 17.9499 14.954 18.6859 14.954 19.8099C14.954 21.4159 14.939 22.7059 14.939 23.0959C14.939 23.4109 15.149 23.7859 15.764 23.6659C20.565 22.0919 24 17.5919 24 12.2969C24 5.66988 18.627 0.296875 12 0.296875Z" fill="currentcolor"></path></g></svg>
+                </a>
+                <a href="https://t.me/Kvickzz" target="_blank" rel="noopener">
+                    <svg width="35" height="35" fill="currentcolor" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css"> .st0{fill:none;} </style> <path d="M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10S17.5,2,12,2z M16.9,8.1l-1.7,8.2c-0.1,0.6-0.5,0.7-0.9,0.4l-2.6-2 c-0.6,0.6-1.2,1.1-1.3,1.3c-0.2,0.1-0.3,0.3-0.5,0.3c-0.3,0-0.3-0.2-0.4-0.4l-0.9-3L5.9,12c-0.6-0.2-0.6-0.6,0.1-0.9l10.2-3.9 C16.6,7.1,17.1,7.3,16.9,8.1z M14.5,9l-5.7,3.6l0.9,3l0.2-2l4.9-4.4C15.1,8.9,14.9,8.9,14.5,9z"></path> <rect class="st0" width="24" height="24"></rect> </g></svg>
+                </a>
+                <a href="https://discord.com/users/kvicks/" target="_blank" rel="noopener">
+                    <svg width="35" height="35" fill="currentcolor" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>discord</title> <path d="M20.992 20.163c-1.511-0.099-2.699-1.349-2.699-2.877 0-0.051 0.001-0.102 0.004-0.153l-0 0.007c-0.003-0.048-0.005-0.104-0.005-0.161 0-1.525 1.19-2.771 2.692-2.862l0.008-0c1.509 0.082 2.701 1.325 2.701 2.847 0 0.062-0.002 0.123-0.006 0.184l0-0.008c0.003 0.050 0.005 0.109 0.005 0.168 0 1.523-1.191 2.768-2.693 2.854l-0.008 0zM11.026 20.163c-1.511-0.099-2.699-1.349-2.699-2.877 0-0.051 0.001-0.102 0.004-0.153l-0 0.007c-0.003-0.048-0.005-0.104-0.005-0.161 0-1.525 1.19-2.771 2.692-2.862l0.008-0c1.509 0.082 2.701 1.325 2.701 2.847 0 0.062-0.002 0.123-0.006 0.184l0-0.008c0.003 0.048 0.005 0.104 0.005 0.161 0 1.525-1.19 2.771-2.692 2.862l-0.008 0zM26.393 6.465c-1.763-0.832-3.811-1.49-5.955-1.871l-0.149-0.022c-0.005-0.001-0.011-0.002-0.017-0.002-0.035 0-0.065 0.019-0.081 0.047l-0 0c-0.234 0.411-0.488 0.924-0.717 1.45l-0.043 0.111c-1.030-0.165-2.218-0.259-3.428-0.259s-2.398 0.094-3.557 0.275l0.129-0.017c-0.27-0.63-0.528-1.142-0.813-1.638l0.041 0.077c-0.017-0.029-0.048-0.047-0.083-0.047-0.005 0-0.011 0-0.016 0.001l0.001-0c-2.293 0.403-4.342 1.060-6.256 1.957l0.151-0.064c-0.017 0.007-0.031 0.019-0.040 0.034l-0 0c-2.854 4.041-4.562 9.069-4.562 14.496 0 0.907 0.048 1.802 0.141 2.684l-0.009-0.11c0.003 0.029 0.018 0.053 0.039 0.070l0 0c2.14 1.601 4.628 2.891 7.313 3.738l0.176 0.048c0.008 0.003 0.018 0.004 0.028 0.004 0.032 0 0.060-0.015 0.077-0.038l0-0c0.535-0.72 1.044-1.536 1.485-2.392l0.047-0.1c0.006-0.012 0.010-0.027 0.010-0.043 0-0.041-0.026-0.075-0.062-0.089l-0.001-0c-0.912-0.352-1.683-0.727-2.417-1.157l0.077 0.042c-0.029-0.017-0.048-0.048-0.048-0.083 0-0.031 0.015-0.059 0.038-0.076l0-0c0.157-0.118 0.315-0.24 0.465-0.364 0.016-0.013 0.037-0.021 0.059-0.021 0.014 0 0.027 0.003 0.038 0.008l-0.001-0c2.208 1.061 4.8 1.681 7.536 1.681s5.329-0.62 7.643-1.727l-0.107 0.046c0.012-0.006 0.025-0.009 0.040-0.009 0.022 0 0.043 0.008 0.059 0.021l-0-0c0.15 0.124 0.307 0.248 0.466 0.365 0.023 0.018 0.038 0.046 0.038 0.077 0 0.035-0.019 0.065-0.046 0.082l-0 0c-0.661 0.395-1.432 0.769-2.235 1.078l-0.105 0.036c-0.036 0.014-0.062 0.049-0.062 0.089 0 0.016 0.004 0.031 0.011 0.044l-0-0.001c0.501 0.96 1.009 1.775 1.571 2.548l-0.040-0.057c0.017 0.024 0.046 0.040 0.077 0.040 0.010 0 0.020-0.002 0.029-0.004l-0.001 0c2.865-0.892 5.358-2.182 7.566-3.832l-0.065 0.047c0.022-0.016 0.036-0.041 0.039-0.069l0-0c0.087-0.784 0.136-1.694 0.136-2.615 0-5.415-1.712-10.43-4.623-14.534l0.052 0.078c-0.008-0.016-0.022-0.029-0.038-0.036l-0-0z"></path> </g></svg>
+                </a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

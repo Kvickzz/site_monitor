@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Статистика - Site Monitor{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>Статистика</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Общий Uptime</h5>
+                <p class="display-3">{{ overall_uptime }}%</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Всего проверок</h5>
+                <p class="display-3">{{ total_checks }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Мониторируемых сайтов</h5>
+                <p class="display-3">{{ websites.count }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Самые надежные сайты</h5>
+            </div>
+            <div class="card-body">
+                {% if most_reliable %}
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Сайт</th>
+                                    <th>Uptime</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for website in most_reliable %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'monitor:website_detail' website.id %}">
+                                                {{ website.name }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success" 
+                                                     style="width: {{ website.uptime_percentage }}%"></div>
+                                            </div>
+                                            {{ website.uptime_percentage }}%
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Нет данных</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Самые проблемные сайты</h5>
+            </div>
+            <div class="card-body">
+                {% if most_problematic %}
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Сайт</th>
+                                    <th>Uptime</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for website in most_problematic %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'monitor:website_detail' website.id %}">
+                                                {{ website.name }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="progress">
+                                                <div class="progress-bar {% if website.uptime_percentage < 50 %}bg-danger{% else %}bg-warning{% endif %}" 
+                                                     style="width: {{ website.uptime_percentage }}%"></div>
+                                            </div>
+                                            {{ website.uptime_percentage }}%
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Нет данных</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+
+{% block title %}Дашборд - Site Monitor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .page-header h1 {
+        font-size: 26px;
+        font-weight: 700;
+        margin: 0;
+    }
+    .page-header p {
+        color: var(--text-muted);
+        margin: 4px 0 0;
+        font-size: 14px;
+    }
+
+    /* Overview card */
+    .overview-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 24px;
+        height: 100%;
+    }
+    .overview-label {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    .overview-number {
+        font-size: 38px;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .overview-bar {
+        display: flex;
+        height: 10px;
+        border-radius: 6px;
+        overflow: hidden;
+        margin: 20px 0 14px;
+        background: var(--surface-alt);
+    }
+    .overview-bar span { display: block; }
+    .overview-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+    .overview-legend .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+    }
+
+    /* Small stat chips */
+    .chip-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        height: 100%;
+    }
+    .chip-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .chip-icon.up { background: rgba(40,167,69,.18); color: #4ade80; }
+    .chip-icon.down { background: rgba(220,53,69,.18); color: #f87171; }
+    .chip-icon.slow { background: rgba(255,193,7,.18); color: #fbbf24; }
+    .chip-value { font-size: 20px; font-weight: 700; line-height: 1; }
+    .chip-label { color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+
+    /* Sites table card */
+    .sites-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px;
+    }
+    .sites-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    .sites-card-header h5 { margin: 0; font-weight: 700; }
+    .site-row-name {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .site-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--surface-alt);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--text-muted);
+        flex-shrink: 0;
+    }
+    .site-name-block .name { font-weight: 600; font-size: 14px; }
+    .site-name-block .url { color: var(--text-muted); font-size: 12px; }
+    .table > :not(caption) > * > * { padding: 12px 10px; vertical-align: middle; }
+    .btn-icon-check {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .15s ease;
+    }
+    .btn-icon-check:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+    }
+
+    /* Side column */
+    .alert-item {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        background: var(--surface-alt);
+    }
+    .alert-item .site { font-weight: 600; font-size: 13px; }
+    .alert-item .msg { color: var(--text-muted); font-size: 12px; margin: 2px 0; }
+    .alert-item .time { color: var(--text-muted); font-size: 11px; }
+
+    .cta-card {
+        background: linear-gradient(145deg, #3a1414 0%, #1d1d22 100%);
+        border: 1px solid var(--accent);
+        border-radius: 14px;
+        padding: 22px;
+        margin-top: 20px;
+    }
+    .cta-card h5 { font-weight: 700; margin-bottom: 6px; }
+    .cta-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 16px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Обзор</h1>
+        <p>Мониторинг доступности ваших сайтов</p>
+    </div>
+    <a href="{% url 'monitor:add_website' %}" class="btn btn-primary">+ Добавить сайт</a>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-5">
+        <div class="overview-card">
+            <div class="overview-label">Всего сайтов под мониторингом</div>
+            <div class="overview-number">{{ stats.total_websites }}</div>
+
+            {% if stats.total_websites %}
+                <div class="overview-bar">
+                    {% if stats.up %}<span style="flex: {{ stats.up }} 1 0%; background:#28a745;"></span>{% endif %}
+                    {% if stats.down %}<span style="flex: {{ stats.down }} 1 0%; background:#dc3545;"></span>{% endif %}
+                    {% if stats.slow %}<span style="flex: {{ stats.slow }} 1 0%; background:#ffc107;"></span>{% endif %}
+                    {% if stats.unknown %}<span style="flex: {{ stats.unknown }} 1 0%; background:#6c757d;"></span>{% endif %}
+                </div>
+                <div class="overview-legend">
+                    <span><span class="dot" style="background:#28a745;"></span>Работают ({{ stats.up }})</span>
+                    <span><span class="dot" style="background:#dc3545;"></span>Не работают ({{ stats.down }})</span>
+                    <span><span class="dot" style="background:#ffc107;"></span>Медленно ({{ stats.slow }})</span>
+                    {% if stats.unknown %}<span><span class="dot" style="background:#6c757d;"></span>Неизвестно ({{ stats.unknown }})</span>{% endif %}
+                </div>
+            {% else %}
+                <p class="text-muted mt-3 mb-0">Добавьте сайт чтобы увидеть статистику</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="row g-3 h-100">
+            <div class="col-md-4">
+                <div class="chip-card">
+                    <div class="chip-icon up">✓</div>
+                    <div>
+                        <div class="chip-value">{{ stats.up }}</div>
+                        <div class="chip-label">Работают</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chip-card">
+                    <div class="chip-icon down">✕</div>
+                    <div>
+                        <div class="chip-value">{{ stats.down }}</div>
+                        <div class="chip-label">Не работают</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chip-card">
+                    <div class="chip-icon slow">◷</div>
+                    <div>
+                        <div class="chip-value">{{ stats.slow }}</div>
+                        <div class="chip-label">Медленно</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="sites-card">
+            <div class="sites-card-header">
+                <h5>Ваши сайты</h5>
+                <a href="{% url 'monitor:website_list' %}" class="text-decoration-none" style="font-size:13px;">Смотреть все →</a>
+            </div>
+
+            {% if websites %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr style="color: var(--text-muted); font-size: 12px;">
+                                <th>Сайт</th>
+                                <th>Статус</th>
+                                <th>Uptime</th>
+                                <th>Проверен</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for website in websites %}
+                                <tr>
+                                    <td>
+                                        <div class="site-row-name">
+                                            <div class="site-avatar">{{ website.name|slice:":1"|upper }}</div>
+                                            <div class="site-name-block">
+                                                <div class="name">{{ website.name }}</div>
+                                                <div class="url">{{ website.url }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ website.status }}">
+                                            {{ website.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ website.uptime_percentage }}%</td>
+                                    <td><small class="text-muted">{{ website.last_check|default:"Не проверен" }}</small></td>
+                                    <td class="text-end">
+                                        <a href="{% url 'monitor:website_detail' website.id %}" class="btn-icon-check" title="Подробно">→</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">Нет мониторируемых сайтов. <a href="{% url 'monitor:add_website' %}">Добавьте первый сайт</a></p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="sites-card">
+            <div class="sites-card-header">
+                <h5>Уведомления</h5>
+            </div>
+            {% if recent_alerts %}
+                <div style="max-height: 320px; overflow-y: auto;">
+                    {% for alert in recent_alerts %}
+                        <div class="alert-item">
+                            <div class="site">{{ alert.website.name }}</div>
+                            <div class="msg">{{ alert.message }}</div>
+                            <div class="time">{{ alert.triggered_at }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">Нет активных уведомлений</p>
+            {% endif %}
+        </div>
+
+        <div class="cta-card">
+            <h5>Следите за важным</h5>
+            <p>Добавьте ещё один сайт и получайте уведомления при первых признаках проблем.</p>
+            <a href="{% url 'monitor:add_website' %}" class="btn btn-primary w-100">+ Добавить сайт</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

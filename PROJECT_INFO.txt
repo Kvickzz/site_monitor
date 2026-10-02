@@ -1,0 +1,232 @@
+================================================================================
+                      DJANGO SITE MONITOR
+================================================================================
+
+Полнофункциональное Django приложение для мониторинга доступности веб-сайтов.
+
+================================================================================
+ОСНОВНЫЕ КОМПОНЕНТЫ
+================================================================================
+
+1. CORE ФАЙЛЫ:
+   - manage.py - Django CLI
+   - requirements.txt - Python зависимости
+   - Dockerfile - Docker образ
+   - docker-compose.yml - Docker Compose конфигурация
+   - .env.example - Пример переменных окружения
+   - .gitignore - Git игнор файл
+
+2. КОНФИГУРАЦИЯ (config/):
+   - settings.py - Основные настройки Django
+   - urls.py - Главные маршруты приложения
+   - celery.py - Конфигурация Celery
+   - wsgi.py - WSGI для продакшена
+   - asgi.py - ASGI для продакшена
+
+3. ПРИЛОЖЕНИЕ (monitor/):
+   - models.py - Модели БД (Website, HealthCheck, Alert, NotificationChannel)
+   - views.py - Views и REST API ViewSets
+   - urls.py - Маршруты приложения
+   - forms.py - Django формы
+   - tasks.py - Celery фоновые задачи
+   - services.py - Бизнес-логика (проверка, уведомления)
+   - serializers.py - REST API сериалайзеры
+   - admin.py - Django админ-панель
+   - apps.py - Конфигурация приложения
+   - tests.py - Модульные тесты
+
+4. ШАБЛОНЫ (templates/):
+   - base.html - Базовый шаблон
+   - includes/navbar.html - Навигация
+   - monitor/dashboard.html - Дашборд
+   - monitor/website_list.html - Список сайтов
+   - monitor/website_detail.html - Детали сайта
+   - monitor/add_website.html - Форма добавления
+   - monitor/edit_website.html - Форма редактирования
+   - monitor/statistics.html - Статистика
+
+5. ДОКУМЕНТАЦИЯ:
+   - README.md - Основная документация
+   - QUICK_START.md - Быстрый старт
+   - DEPLOYMENT.md - Инструкции развертывания
+
+================================================================================
+ФУНКЦИОНАЛЬНОСТЬ
+================================================================================
+
+✓ Добавление/удаление сайтов для мониторинга
+✓ Периодические проверки доступности (HEAD/GET запросы)
+✓ История всех проверок
+✓ Расчет Uptime (24ч, 7д, 30д)
+✓ Система уведомлений (Email, Telegram, Slack, Webhook)
+✓ REST API для интеграции
+✓ Админ-панель Django для управления
+✓ Фоновые задачи через Celery
+✓ Redis для кэширования и очереди задач
+✓ PostgreSQL для надежного хранения
+✓ Docker для легкого развертывания
+
+================================================================================
+СТЕК ТЕХНОЛОГИЙ
+================================================================================
+
+Backend:
+  - Django 4.2
+  - Django REST Framework 3.14
+  - Celery 5.3
+  - Requests 2.31
+  
+Database:
+  - PostgreSQL 15
+  - Redis 7
+  
+Frontend:
+  - Bootstrap 5.3
+  - HTML5/CSS3
+
+Deployment:
+  - Docker & Docker Compose
+  - Gunicorn
+  - Nginx (для продакшена)
+
+================================================================================
+БЫСТРЫЙ СТАРТ
+================================================================================
+
+С Docker (рекомендуется):
+  1. docker-compose up -d
+  2. docker-compose exec web python manage.py migrate
+  3. docker-compose exec web python manage.py createsuperuser
+  4. Откройте http://localhost:8000
+
+Локально:
+  1. python -m venv venv && source venv/bin/activate
+  2. pip install -r requirements.txt
+  3. python manage.py migrate
+  4. python manage.py createsuperuser
+  5. python manage.py runserver (терминал 1)
+  6. celery -A config worker -l info (терминал 2)
+  7. celery -A config beat -l info (терминал 3)
+
+================================================================================
+КЛЮЧЕВЫЕ МОМЕНТЫ
+================================================================================
+
+- Сайты проверяются каждые N секунд (настраивается для каждого сайта)
+- История проверок сохраняется в БД
+- Uptime считается на основе успешных проверок
+- При изменении статуса создается Alert
+- Уведомления отправляются автоматически (если настроены)
+- REST API доступен для программной интеграции
+- Админ-панель для управления всеми аспектами
+
+================================================================================
+ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ (.env)
+================================================================================
+
+DEBUG=True/False
+SECRET_KEY=<случайный ключ>
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Base de Dados
+DB_NAME=site_monitor
+DB_USER=postgres
+DB_PASSWORD=<your_db_password>
+DB_HOST=localhost
+DB_PORT=5432
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+
+# Email (для уведомлений)
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+
+# Security
+SECURE_SSL_REDIRECT=True (продакшен)
+SECURE_BROWSER_XSS_FILTER=True
+SESSION_COOKIE_SECURE=True (продакшен)
+
+================================================================================
+СТРУКТУРА ДАННЫХ
+================================================================================
+
+Website:
+  - id (UUID)
+  - user (FK)
+  - name, url
+  - check_interval, timeout
+  - status (up/down/slow/unknown)
+  - uptime_percentage
+  - last_check, last_response_time
+  - is_active, created_at, updated_at
+
+HealthCheck:
+  - website (FK)
+  - status, status_code
+  - response_time
+  - error_message
+  - checked_at
+
+Alert:
+  - website (FK)
+  - alert_type (down/up/slow/ssl_error)
+  - status (triggered/acknowledged/resolved)
+  - message
+  - triggered_at, acknowledged_at, resolved_at
+
+NotificationChannel:
+  - user (FK)
+  - channel_type (email/telegram/slack/webhook)
+  - config (JSON)
+  - is_active, created_at
+
+================================================================================
+ОСНОВНЫЕ TASKS (Celery)
+================================================================================
+
+check_website_health(website_id)
+  -> Проверить доступность сайта
+  -> Сохранить результат
+  -> Обновить статус
+  -> Создать Alert если нужен
+
+check_all_websites()
+  -> Запустить проверку для всех активных сайтов
+  -> Запускается каждые 5 минут (настраивается)
+
+calculate_uptime_statistics()
+  -> Пересчитать uptime для всех сайтов
+  -> Запускается каждый час
+
+cleanup_old_health_checks()
+  -> Удалить проверки старше N дней
+  -> Запускается каждый день
+
+================================================================================
+АВТЕНТИФИКАЦИЯ И РАЗРЕШЕНИЯ
+================================================================================
+
+- Пользователь может видеть только свои сайты
+- Работает на Django auth + Session
+- REST API использует Session auth
+- Админ-панель для суперпользователей
+
+================================================================================
+РАЗВЕРТЫВАНИЕ В ПРОДАКШЕНЕ
+================================================================================
+
+Смотреть DEPLOYMENT.md для:
+  - Установки на VPS
+  - Конфигурации PostgreSQL
+  - Setup Nginx + SSL
+  - Systemd сервисы
+  - Heroku deployment
+  - Backup & Restore
+
+================================================================================
+ПОДДЕРЖКА И КОНТАКТЫ
+================================================================================
+
+Для вопросов и проблем создавайте Issues в репозитории.
+
+================================================================================

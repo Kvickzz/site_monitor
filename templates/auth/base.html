@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Site Monitor{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #1d1d22;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px;
+        }
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border: none;
+            background: #29292e;
+            color: #fff;
+            min-width: 300px;
+        }
+        .card-header {
+            border-radius: 12px 12px 0 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .form-control {
+            border: 1px solid #201f1f;
+            border-radius: 6px;
+            padding: 10px 12px;
+        }
+        .form-control:focus {
+            border-color: #912828;
+            box-shadow: 0 0 0 0.2rem rgba(145, 40, 40, 0.25);
+        }
+        .btn {
+            color: white;
+            padding: 10px 20px;
+            font-weight: 500;
+            border: none;
+            border-radius: 6px;
+            background: #912828;
+            transition: background 0.15s ease;
+        }
+        .btn:hover {
+            background: #af2828;
+            color: white;
+        }
+        input {
+            min-width: 100%;
+            min-height: 30px;
+            background-color: rgb(65, 76, 112);
+            border: 1px solid rgb(94, 94, 95);
+            border-radius: 4px;
+            color: white;
+        }
+        input:focus {
+            outline: 2px solid rgb(116, 127, 165);
+            border: none;
+        }
+        a {
+            color: #af2828;
+        }
+        a:hover {
+            color: #d43a3a;
+        }
+        hr {
+            border-color: #3a3a40;
+            opacity: 1;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="auth-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

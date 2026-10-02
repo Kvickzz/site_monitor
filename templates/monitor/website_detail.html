@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ website.name }} - Site Monitor{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1>{{ website.name }}</h1>
+        <p class="text-muted">{{ website.url }}</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'monitor:edit_website' website.id %}" class="btn btn-secondary">Редактировать</a>
+        <form method="post" action="{% url 'monitor:run_check_now' website.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Проверить сейчас</button>
+        </form>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Статус</h5>
+                <p class="display-5"><span class="badge badge-{{ website.status }}">{{ website.get_status_display }}</span></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Uptime</h5>
+                <p class="display-4">{{ website.uptime_percentage }}%</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Время ответа</h5>
+                <p class="display-4">{{ avg_response_time }}ms</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Проверен</h5>
+                <p class="display-6"><small>{{ website.last_check|default:"Никогда" }}</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Недавние уведомления</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_alerts %}
+                        {% for alert in recent_alerts %}
+                            <div class="alert alert-{{ alert.alert_type }} mb-2">
+                                <strong>{{ alert.get_alert_type_display }}</strong><br>
+                                {{ alert.message }}<br>
+                                <small class="text-muted">{{ alert.triggered_at }}</small>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">Нет уведомлений</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Последние проверки</h5>
+            </div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                {% if health_checks %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Статус</th>
+                                    <th>Код</th>
+                                    <th>Время ответа</th>
+                                    <th>Время</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for check in health_checks %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge badge-{{ check.status }}">
+                                                {{ check.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ check.status_code|default:"—" }}</td>
+                                        <td>{{ check.response_time }}ms</td>
+                                        <td><small>{{ check.checked_at }}</small></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Нет данных о проверках</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

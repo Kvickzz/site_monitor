@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Список сайтов - Site Monitor{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h1>Мониторируемые сайты</h1>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{% url 'monitor:add_website' %}" class="btn btn-primary">+ Добавить сайт</a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Поиск..." value="{{ search|default:'' }}">
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">Все статусы</option>
+                    <option value="up" {% if status_filter == 'up' %}selected{% endif %}>Работает</option>
+                    <option value="down" {% if status_filter == 'down' %}selected{% endif %}>Не работает</option>
+                    <option value="slow" {% if status_filter == 'slow' %}selected{% endif %}>Медленно</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-outline-primary w-100">Поиск</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if websites %}
+    <div class="row">
+        {% for website in websites %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">{{ website.name }}</h5>
+                            <span class="badge badge-{{ website.status }}">{{ website.get_status_display }}</span>
+                        </div>
+                        <p class="card-text text-muted"><small>{{ website.url }}</small></p>
+                        <div class="row text-center mb-3">
+                            <div class="col">
+                                <small>Uptime</small>
+                                <p class="mb-0"><strong>{{ website.uptime_percentage }}%</strong></p>
+                            </div>
+                            <div class="col">
+                                <small>Время ответа</small>
+                                <p class="mb-0"><strong>{{ website.last_response_time|default:"—" }}ms</strong></p>
+                            </div>
+                            <div class="col">
+                                <small>Проверен</small>
+                                <p class="mb-0"><strong>{{ website.last_check|default:"—" }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="{% url 'monitor:website_detail' website.id %}" class="btn btn-sm btn-primary">
+                            Подробно
+                        </a>
+                        <a href="{% url 'monitor:edit_website' website.id %}" class="btn btn-sm btn-secondary">
+                            Редактировать
+                        </a>
+                        <form method="post" action="{% url 'monitor:delete_website' website.id %}" 
+                              style="display:inline;" onsubmit="return confirm('Вы уверены?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        Сайты не найдены. <a href="{% url 'monitor:add_website' %}">Добавьте новый сайт</a>
+    </div>
+{% endif %}
+{% endblock %}

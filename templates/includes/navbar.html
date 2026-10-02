@@ -1,0 +1,60 @@
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'monitor:dashboard' %}">Site Monitor</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            {% if user.is_authenticated %}
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'monitor:dashboard' %}">Дашборд</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'monitor:website_list' %}">Сайты</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'monitor:add_website' %}">+ Добавить сайт</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'monitor:statistics' %}">Статистика</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                             {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'monitor:profile' %}">Профиль</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'monitor:logout' %}">
+                                    Выход
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            {% else %}
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'monitor:login' %}">Вход</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'monitor:register' %}">Регистрация</a>
+                    </li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar-nav .nav-link {
+        transition: color 0.15s ease;
+    }
+    .navbar-nav .nav-link:hover {
+        color: #af2828 !important;
+    }
+</style>
